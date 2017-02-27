@@ -21,7 +21,10 @@ module.exports = {
 			sails.log.debug('Poll:');
 			sails.log.debug(poll);
 
-			if(err) return res.send(err);
+			if(err) return res.send({
+				status: 'error',
+				error: err
+			});
 
 			req.body.choices.forEach((current)=>{
 
@@ -34,10 +37,21 @@ module.exports = {
 				Choice.create(choice).exec((err, choice) => {
 					sails.log.debug('Choice:');
 					sails.log.debug(choice);
+					if(err) return res.send({
+						status: 'error',
+						error: err
+					});
 				});
 			});
 
-			return res.send(poll);
+			Poll.findOne(poll.id).populateAll().exec((err, choices)=>{
+				const result = {
+					status: 'success',
+					data: Object.assign({}, poll, choices)
+				} 
+				return res.send(result);
+			});
+
 		});
 
 
