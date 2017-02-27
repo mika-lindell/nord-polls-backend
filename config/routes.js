@@ -21,7 +21,6 @@
  */
 
 module.exports.routes = {
-
   /***************************************************************************
   *                                                                          *
   * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
@@ -34,7 +33,7 @@ module.exports.routes = {
 
   '/': {
     view: 'homepage'
-  }
+  },
 
   /***************************************************************************
   *                                                                          *
@@ -45,5 +44,8 @@ module.exports.routes = {
   * for configuration options and examples.                                  *
   *                                                                          *
   ***************************************************************************/
+
+  'GET /poll': 'PollController.read'
+
 
 };
