@@ -5,11 +5,16 @@
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
+const shortid = require('shortid');
+
 module.exports = {
 
   attributes: {
-  	_id: {
+  	id: {
   		type: 'string',
+  		defaultsTo: shortid.generate(),
+  		index: true,
+  		primaryKey: true,
  		unique: true,
       	required: true 		
   	},
@@ -20,6 +25,7 @@ module.exports = {
 
   	choices: {
   		collection: 'choice',
+  		via: 'poll'
 
   	}
 
