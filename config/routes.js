@@ -43,7 +43,6 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-  'GET /poll/': 'PollController.read',
   'GET /poll/:id': 'PollController.read',
   'POST /poll/*': 'PollController.create',
   'PUT /poll/*': 'PollController.update',
