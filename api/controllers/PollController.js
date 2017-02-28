@@ -19,6 +19,11 @@ module.exports = {
         id: shortid.generate()
       }, req.body);    
     Poll.create(newPoll).then((poll)=> {
+      if(typeof poll === 'undefined'){
+        return res.send(400, {
+          error: 'The poll you are looking for seems to be missing.'
+        });
+      }
       req.body.choices.map((current)=> { 
         const newChoice = {
           id: shortid.generate(),
