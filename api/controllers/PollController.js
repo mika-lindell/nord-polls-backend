@@ -13,7 +13,7 @@ module.exports = {
   /**
    * Create new poll and save it to database.
    *
-   * @return {object} The poll which was added to database or error message in case of error.
+   * @return {object} Sails ServerResponse containing the poll which was added to database or error message in case of error.
    */
   create(req, res) {
 
