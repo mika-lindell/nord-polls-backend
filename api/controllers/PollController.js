@@ -10,7 +10,7 @@ const shortid = require('shortid');
 
 module.exports = {
   /**
-   * Create new poll and save it to database.
+   * Create new poll and save it to database. /poll/
    *
    * @return {object} Sails ServerResponse containing the poll which was added to database or error message in case of error.
    */
@@ -43,8 +43,37 @@ module.exports = {
       });
     });
   },
+  /**
+   * Get existing poll. /poll/:id
+   *
+   * @return {object} Sails ServerResponse containing the poll which was requested.
+   */
   read(req, res) {
-    return res.send('Read');
+    const id = req.param('id');
+
+    if(typeof id === 'undefined'){
+      return res.send(400, {
+        error: 'It seems that your website address is missing the id of the poll.'
+      });
+    }
+
+    Poll.findOne(id).then((poll)=> {
+      if(typeof poll === 'undefined'){
+        return res.send(404, {
+          error: 'The poll you are looking for seems to be missing.'
+        });
+      }
+      Poll.findOne(id).populateAll().then((choices)=> {
+        const result = {
+          data: Object.assign({}, poll, choices)
+        }; 
+        return res.send(result);
+      }, (err)=> {
+        return res.send(400, {
+          error: 'Failed to find the poll :('
+        });
+      });
+    });
   },
   update(req, res) {
     return res.send('Update');
