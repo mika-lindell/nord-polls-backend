@@ -10,62 +10,52 @@ const shortid = require('shortid');
 
 module.exports = {
 
-	create: function (req, res) {
+  /**
+   * Create new poll and save it to database.
+   *
+   * @return {object} The poll which was added to database or error message in case of error.
+   */
+  create(req, res) {
 
-		sails.log.debug('-- CREATE POLL --');
-		sails.log.debug('Payload:');
-		sails.log.debug(req.body);
+    Poll.create(req.body).then((poll)=> {
 
-		Poll.create(req.body).exec((err, poll) => {
-			
-			sails.log.debug('Poll:');
-			sails.log.debug(poll);
+      req.body.choices.map((current)=> { 
 
-			if(err) return res.send({
-				status: 'error',
-				error: 'Failed to save the poll :('
-			});
+        let newChoice = {
+          label: current,
+          poll: poll.id
+        };
 
-			req.body.choices.forEach((current)=>{
+        Choice.create(newChoice).then((choice)=>{}, (err)=> {
+          return res.send({
+            status: 'error',
+            error: 'Failed to save poll choices :('
+          });         
+        });
+      });
 
-				let choice = {
-					label: current,
-					poll: poll.id
-				};
+      Poll.findOne(poll.id).populateAll().exec((err, choices)=>{
+        const result = {
+          status: 'success',
+          data: Object.assign({}, poll, choices)
+        } 
+        return res.send(result);
+      });
 
-				Choice.create(choice).exec((err, choice) => {
-					sails.log.debug('Choice:');
-					sails.log.debug(choice);
-					if(err) return res.send({
-						status: 'error',
-						error: 'Failed to save poll choices :('
-					});
-				});
-			});
+    }, (err)=> {
+      return res.send({
+        status: 'error',
+        error: 'Failed to save the poll :('
+      });
+    });
+  },
 
-			Poll.findOne(poll.id).populateAll().exec((err, choices)=>{
-				const result = {
-					status: 'success',
-					data: Object.assign({}, poll, choices)
-				} 
-				return res.send(result);
-			});
+  read(req, res) {
+    return res.send('Read');
+  },
 
-		});
-
-
-
-		// Poll.find({id:1}).exec(function (err, records){
-		// 	console.log(records);
-		// });
-	},
-
-	read: function (req, res) {
-	  return res.send('Read');
-	},
-
-	update: function (req, res) {
-	  return res.send('Update');
-	}	
+  update(req, res) {
+    return res.send('Update');
+  } 
 };
 
