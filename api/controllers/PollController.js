@@ -15,9 +15,13 @@ module.exports = {
    * @return {object} Sails ServerResponse containing the poll which was added to database or error message in case of error.
    */
   create(req, res) {
-    Poll.create(req.body).then((poll)=> {
+    const newPoll = Object.assign({
+        id: shortid.generate()
+      }, req.body);    
+    Poll.create(newPoll).then((poll)=> {
       req.body.choices.map((current)=> { 
         const newChoice = {
+          id: shortid.generate(),
           label: current,
           poll: poll.id
         };
