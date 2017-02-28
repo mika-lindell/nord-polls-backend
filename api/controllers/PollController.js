@@ -23,13 +23,12 @@ module.exports = {
 
 			if(err) return res.send({
 				status: 'error',
-				error: err
+				error: 'Failed to save the poll :('
 			});
 
 			req.body.choices.forEach((current)=>{
 
 				let choice = {
-					id: shortid.generate(),
 					label: current,
 					poll: poll.id
 				};
@@ -39,7 +38,7 @@ module.exports = {
 					sails.log.debug(choice);
 					if(err) return res.send({
 						status: 'error',
-						error: err
+						error: 'Failed to save poll choices :('
 					});
 				});
 			});
