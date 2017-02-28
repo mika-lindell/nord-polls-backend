@@ -17,7 +17,12 @@ module.exports = {
   create(req, res) {
     const newPoll = Object.assign({
         id: shortid.generate()
-      }, req.body);    
+      }, req.body);
+    if(typeof req.body.choices === 'undefined'){
+      return res.send(400, {
+        error: 'Yuor poll needs to have some choices first.'
+      });
+    }    
     Poll.create(newPoll).then((poll)=> {
       if(typeof poll === 'undefined'){
         return res.send(400, {
@@ -40,7 +45,7 @@ module.exports = {
         const result = {
           data: Object.assign({}, poll, choices)
         }; 
-        return res.send(result);
+        return res.send(201, result);
       }, (err)=> {
         return res.send(400, {
           error: 'Failed to save the poll :('
@@ -76,7 +81,7 @@ module.exports = {
         const result = {
           data: Object.assign({}, poll, choices)
         }; 
-        return res.send(result);
+        return res.send(200, result);
       }, (err)=> {
         return res.send(400, {
           error: 'Failed to find the poll :('
@@ -87,7 +92,7 @@ module.exports = {
   /**
    * Add 1 vote to a choice. /poll/:id/vote
    *
-   * @return {integer} Sails ServerResponse containing the updated choice or error message in case of error.
+   * @return {integer} Sails ServerResponse containing void or error message in case of error.
    */
   vote(req, res) {
     const pollID = req.param('id');
@@ -105,14 +110,35 @@ module.exports = {
         });
       }
 
-      const update = {
-        votes: choice.votes + 1
-      }; 
+      Vote.findOne(req.body.choice_id).then((foundVote)=> {
+        if(typeof foundVote === 'undefined'){
+          newVote = {
+            choice_id: choice.id,
+            votes: 1
+          }
 
-      Choice.update({id: req.body.choice_id}, update).then((choice)=> {
-       return res.send({
-          data: choice
-        }); 
+          Vote.create(newVote).then((createdVote)=> {
+            return res.send(201);
+          }, (err)=> {
+            return res.send(400, {
+              error: 'Failed to save the vote :('
+            });            
+          });
+        }
+
+        if(typeof foundVote !== 'undefined'){
+          const update = {
+            votes: foundVote.votes + 1
+          };
+          Vote.update({id: req.body.choice_id}, update).then((updatedVote)=> {
+            return res.send(200);
+          }, (err)=> {
+            return res.send(400, {
+              error: 'Failed to save the vote :('
+            });            
+          });
+        } 
+
       }, (err)=> {
         return res.send(400, {
           error: 'Failed to save the vote :('

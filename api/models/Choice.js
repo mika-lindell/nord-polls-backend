@@ -17,10 +17,6 @@ module.exports = {
     title: {
       type: 'string'
     },
-    votes: {
-      type: 'integer',
-      defaultsTo: 0
-    },
     poll: {
       model: 'poll'
     }
