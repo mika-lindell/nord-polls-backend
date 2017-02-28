@@ -79,8 +79,45 @@ module.exports = {
       });
     });
   },
-  update(req, res) {
-    return res.send('Update');
-  } 
+  /**
+   * Add 1 vote to a choice. /poll/:id/vote
+   *
+   * @return {integer} Sails ServerResponse containing the updated choice or error message in case of error.
+   */
+  vote(req, res) {
+    const pollID = req.param('id');
+
+    if(typeof req.body.choice_id === 'undefined'){
+      return res.send(400, {
+        error: 'Cant\'t find out which choice you wanted to vote.'
+      });
+    }
+
+    Choice.findOne(req.body.choice_id).then((choice)=> {
+      if(typeof choice === 'undefined'){
+        return res.send(404, {
+          error: 'The choice you wanted to vote seems to be missing.'
+        });
+      }
+
+      const update = {
+        votes: choice.votes + 1
+      }; 
+
+      Choice.update({id: req.body.choice_id}, update).then((choice)=> {
+       return res.send({
+          data: choice
+        }); 
+      }, (err)=> {
+        return res.send(400, {
+          error: 'Failed to save the vote :('
+        });
+      });
+    }, (err)=> {
+      return res.send(400, {
+        error: 'Failed to save the vote :('
+      });
+    });
+  }
 };
 
