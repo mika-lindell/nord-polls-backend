@@ -8,7 +8,6 @@
 const shortid = require('shortid');
 
 module.exports = {
-
   attributes: {
     id: {
       type: 'string',
@@ -18,17 +17,13 @@ module.exports = {
       unique: true,
       required: true    
     },
-
     title: {
       type: 'string'
     },
-
     choices: {
       collection: 'choice',
       via: 'poll'
     }
-
-
   }
 };
 

@@ -8,9 +8,8 @@
 const shortid = require('shortid');
 
 module.exports = {
-
   attributes: {
-  id: {
+    id: {
       type: 'string',
       defaultsTo: shortid.generate(),
       index: true,
@@ -18,11 +17,9 @@ module.exports = {
       unique: true,
       required: true,     
     },
-
     title: {
       type: 'string'
     },
-
     poll: {
       model: 'poll'
     }
