@@ -15,8 +15,8 @@ module.exports = {
       defaultsTo: shortid.generate(),
       index: true,
       primaryKey: true,
-    unique: true,
-        required: true    
+      unique: true,
+      required: true    
     },
 
     title: {
@@ -26,7 +26,6 @@ module.exports = {
     choices: {
       collection: 'choice',
       via: 'poll'
-
     }
 
 
