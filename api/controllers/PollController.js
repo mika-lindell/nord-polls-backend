@@ -21,17 +21,21 @@ module.exports = {
           label: current,
           poll: poll.id
         };
-        Choice.create(newChoice).then((choice)=> {}, (err)=> {
+        Choice.create(newChoice).then((choice)=>{}, (err)=> {
           return res.send(400, {
             error: 'Failed to save poll choices :('
           });         
         });
       });
-      Poll.findOne(poll.id).populateAll().then((err, choices)=> {
+      Poll.findOne(poll.id).populateAll().then((choices)=> {
         const result = {
           data: Object.assign({}, poll, choices)
         }; 
         return res.send(result);
+      }, (err)=> {
+        return res.send(400, {
+          error: 'Failed to save the poll :('
+        });
       });
     }, (err)=> {
       return res.send(400, {
