@@ -16,19 +16,14 @@ module.exports = {
    */
   create(req, res) {
     const newPoll = Object.assign({
-        id: shortid.generate()
-      }, req.body);
-    if(typeof req.body.choices === 'undefined'){
+      id: shortid.generate()
+    }, req.body);
+    if(!req.body.choices){
       return res.send(400, {
-        error: 'Yuor poll needs to have some choices first.'
+        error: 'Your poll needs to have some choices first.'
       });
     }    
     Poll.create(newPoll).then((poll)=> {
-      if(typeof poll === 'undefined'){
-        return res.send(400, {
-          error: 'The poll you are looking for seems to be missing.'
-        });
-      }
       req.body.choices.map((current)=> { 
         const newChoice = {
           id: shortid.generate(),
@@ -65,14 +60,14 @@ module.exports = {
   read(req, res) {
     const id = req.param('id');
 
-    if(typeof id === 'undefined'){
+    if(!id){
       return res.send(400, {
         error: 'It seems that your website address is missing the id of the poll.'
       });
     }
 
     Poll.findOne(id).then((poll)=> {
-      if(typeof poll === 'undefined'){
+      if(!poll){
         return res.send(404, {
           error: 'The poll you are looking for seems to be missing.'
         });
@@ -97,21 +92,21 @@ module.exports = {
   vote(req, res) {
     const pollID = req.param('id');
 
-    if(typeof req.body.choice_id === 'undefined'){
+    if(req.body.choice_id){
       return res.send(400, {
         error: 'Cant\'t find out which choice you wanted to vote.'
       });
     }
 
     Choice.findOne(req.body.choice_id).then((choice)=> {
-      if(typeof choice === 'undefined'){
+      if(!choice){
         return res.send(404, {
           error: 'The choice you wanted to vote seems to be missing.'
         });
       }
 
       Vote.findOne(req.body.choice_id).then((foundVote)=> {
-        if(typeof foundVote === 'undefined'){
+        if(!foundVote){
           newVote = {
             choice_id: choice.id,
             votes: 1
@@ -126,7 +121,7 @@ module.exports = {
           });
         }
 
-        if(typeof foundVote !== 'undefined'){
+        if(foundVote){
           const update = {
             votes: foundVote.votes + 1
           };
