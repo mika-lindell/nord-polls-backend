@@ -73,19 +73,14 @@ module.exports = {
    */
   create(req, res) {
     const newPoll = Object.assign({
-        id: shortid.generate()
-      }, req.body);
-    if(typeof req.body.choices === 'undefined'){
+      id: shortid.generate()
+    }, req.body);
+    if(!req.body.choices){
       return res.send(400, {
-        error: 'Yuor poll needs to have some choices first.'
+        error: 'Your poll needs to have some choices first.'
       });
     }    
     Poll.create(newPoll).then((poll)=> {
-      if(typeof poll === 'undefined'){
-        return res.send(400, {
-          error: 'The poll you are looking for seems to be missing.'
-        });
-      }
       req.body.choices.map((current)=> { 
         const newChoice = {
           id: shortid.generate(),
@@ -120,7 +115,31 @@ module.exports = {
    * @return {object} Sails ServerResponse containing the poll which was requested.
    */
   read(req, res) {
-    return queryPoll(req.param('id'), res, req);
+    const id = req.param('id');
+
+    if(!id){
+      return res.send(400, {
+        error: 'It seems that your website address is missing the id of the poll.'
+      });
+    }
+
+    Poll.findOne(id).then((poll)=> {
+      if(!poll){
+        return res.send(404, {
+          error: 'The poll you are looking for seems to be missing.'
+        });
+      }
+      Poll.findOne(id).populateAll().then((choices)=> {
+        const result = {
+          data: Object.assign({}, poll, choices)
+        }; 
+        return res.send(200, result);
+      }, (err)=> {
+        return res.send(400, {
+          error: 'Failed to find the poll :('
+        });
+      });
+    });
   },
   /**
    * Get existing poll with results. /poll/:id/results
@@ -138,21 +157,21 @@ module.exports = {
   vote(req, res) {
     const pollID = req.param('id');
 
-    if(typeof req.body.choice_id === 'undefined'){
+    if(!req.body.choice_id){
       return res.send(400, {
         error: 'Cant\'t find out which choice you wanted to vote.'
       });
     }
 
     Choice.findOne(req.body.choice_id).then((choice)=> {
-      if(typeof choice === 'undefined'){
+      if(!choice){
         return res.send(404, {
           error: 'The choice you wanted to vote seems to be missing.'
         });
       }
 
       Vote.findOne(req.body.choice_id).then((foundVote)=> {
-        if(typeof foundVote === 'undefined'){
+        if(!foundVote){
           newVote = {
             choice_id: choice.id,
             votes: 1
@@ -167,7 +186,7 @@ module.exports = {
           });
         }
 
-        if(typeof foundVote !== 'undefined'){
+        if(foundVote){
           const update = {
             votes: foundVote.votes + 1
           };
@@ -179,7 +198,7 @@ module.exports = {
             });            
           });
         } 
-
+        
       }, (err)=> {
         return res.send(400, {
           error: 'Failed to save the vote :('
