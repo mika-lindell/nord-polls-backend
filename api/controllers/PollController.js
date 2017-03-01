@@ -18,14 +18,14 @@ const shortid = require('shortid');
  * @return {object} Sails ServerResponse containig poll with choices and votes if flag is set
  */
 function queryPoll(id, res, req, withVotes=false){
-  if(typeof id === 'undefined'){
+  if(!id){
     return res.send(400, {
       error: 'It seems that your website address is missing the id of the poll.'
     });
   }
 
   Poll.findOne(id).then((poll)=> {
-    if(typeof poll === 'undefined'){
+    if(!poll){
       return res.send(404, {
         error: 'The poll you are looking for seems to be missing.'
       });
@@ -115,31 +115,7 @@ module.exports = {
    * @return {object} Sails ServerResponse containing the poll which was requested.
    */
   read(req, res) {
-    const id = req.param('id');
-
-    if(!id){
-      return res.send(400, {
-        error: 'It seems that your website address is missing the id of the poll.'
-      });
-    }
-
-    Poll.findOne(id).then((poll)=> {
-      if(!poll){
-        return res.send(404, {
-          error: 'The poll you are looking for seems to be missing.'
-        });
-      }
-      Poll.findOne(id).populateAll().then((choices)=> {
-        const result = {
-          data: Object.assign({}, poll, choices)
-        }; 
-        return res.send(200, result);
-      }, (err)=> {
-        return res.send(400, {
-          error: 'Failed to find the poll :('
-        });
-      });
-    });
+    return queryPoll(req.param('id'), res, req);
   },
   /**
    * Get existing poll with results. /poll/:id/results
