@@ -92,7 +92,7 @@ module.exports = {
   vote(req, res) {
     const pollID = req.param('id');
 
-    if(req.body.choice_id){
+    if(!req.body.choice_id){
       return res.send(400, {
         error: 'Cant\'t find out which choice you wanted to vote.'
       });
@@ -133,7 +133,7 @@ module.exports = {
             });            
           });
         } 
-
+        
       }, (err)=> {
         return res.send(400, {
           error: 'Failed to save the vote :('
