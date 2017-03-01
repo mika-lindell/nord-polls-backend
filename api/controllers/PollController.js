@@ -5,15 +5,14 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-
 const shortid = require('shortid');
 
 /**
  * Get existing poll.
  *
  * @param {string} The id of the poll to be queried
-  @param  {object} Sails response
-   @param {object} Sails request
+ * @param  {object} Sails response
+ * @param {object} Sails request
  * @param {boolean} Include votes in response if true
  *
  * @return {object} Sails ServerResponse containig poll with choices and votes if flag is set
@@ -32,10 +31,32 @@ function queryPoll(id, res, req, withVotes=false){
       });
     }
     Poll.findOne(id).populateAll().then((choices)=> {
-      const result = {
-        data: Object.assign({}, poll, choices)
-      }; 
-      return res.send(200, result);
+      let result;
+
+      if (withVotes){
+        const choiceIds = choices.choices.map((value)=> {
+          return value.id;
+        });
+        Vote.find({choice_id: choiceIds}).then((votes)=> {
+          result = {
+            data: Object.assign({}, poll, choices, {votes: votes})
+          };
+          return res.send(200, result);
+        }, (err)=> {
+          return res.send(400, {
+            error: 'Failed to find the poll :('
+          });
+        });
+      }
+
+      if(!withVotes){
+        result = {
+          data: Object.assign({}, poll, choices)
+        }; 
+        return res.send(200, result);
+      }
+      
+      
     }, (err)=> {
       return res.send(400, {
         error: 'Failed to find the poll :('
@@ -100,6 +121,14 @@ module.exports = {
    */
   read(req, res) {
     return queryPoll(req.param('id'), res, req);
+  },
+  /**
+   * Get existing poll with results. /poll/:id/results
+   *
+   * @return {object} Sails ServerResponse containing the poll (including results) which was requested.
+   */
+  results(req, res) {
+    return queryPoll(req.param('id'), res, req, true);
   },
   /**
    * Add 1 vote to a choice. /poll/:id/vote
