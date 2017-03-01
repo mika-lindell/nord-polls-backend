@@ -5,8 +5,65 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-
 const shortid = require('shortid');
+
+/**
+ * Get existing poll.
+ *
+ * @param {string} The id of the poll to be queried
+ * @param  {object} Sails response
+ * @param {object} Sails request
+ * @param {boolean} Include votes in response if true
+ *
+ * @return {object} Sails ServerResponse containig poll with choices and votes if flag is set
+ */
+function queryPoll(id, res, req, withVotes=false){
+  if(!id){
+    return res.send(400, {
+      error: 'It seems that your website address is missing the id of the poll.'
+    });
+  }
+
+  Poll.findOne(id).then((poll)=> {
+    if(!poll){
+      return res.send(404, {
+        error: 'The poll you are looking for seems to be missing.'
+      });
+    }
+    Poll.findOne(id).populateAll().then((choices)=> {
+      let result;
+
+      if (withVotes){
+        const choiceIds = choices.choices.map((value)=> {
+          return value.id;
+        });
+        Vote.find({choice_id: choiceIds}).then((votes)=> {
+          result = {
+            data: Object.assign({}, poll, choices, {votes: votes})
+          };
+          return res.send(200, result);
+        }, (err)=> {
+          return res.send(400, {
+            error: 'Failed to find the poll :('
+          });
+        });
+      }
+
+      if(!withVotes){
+        result = {
+          data: Object.assign({}, poll, choices)
+        }; 
+        return res.send(200, result);
+      }
+      
+      
+    }, (err)=> {
+      return res.send(400, {
+        error: 'Failed to find the poll :('
+      });
+    });
+  });
+}
 
 module.exports = {
   /**
@@ -58,31 +115,15 @@ module.exports = {
    * @return {object} Sails ServerResponse containing the poll which was requested.
    */
   read(req, res) {
-    const id = req.param('id');
-
-    if(!id){
-      return res.send(400, {
-        error: 'It seems that your website address is missing the id of the poll.'
-      });
-    }
-
-    Poll.findOne(id).then((poll)=> {
-      if(!poll){
-        return res.send(404, {
-          error: 'The poll you are looking for seems to be missing.'
-        });
-      }
-      Poll.findOne(id).populateAll().then((choices)=> {
-        const result = {
-          data: Object.assign({}, poll, choices)
-        }; 
-        return res.send(200, result);
-      }, (err)=> {
-        return res.send(400, {
-          error: 'Failed to find the poll :('
-        });
-      });
-    });
+    return queryPoll(req.param('id'), res, req);
+  },
+  /**
+   * Get existing poll with results. /poll/:id/results
+   *
+   * @return {object} Sails ServerResponse containing the poll (including results) which was requested.
+   */
+  results(req, res) {
+    return queryPoll(req.param('id'), res, req, true);
   },
   /**
    * Add 1 vote to a choice. /poll/:id/vote
@@ -125,7 +166,7 @@ module.exports = {
           const update = {
             votes: foundVote.votes + 1
           };
-          Vote.update({id: req.body.choice_id}, update).then((updatedVote)=> {
+          Vote.update({choice_id: req.body.choice_id}, update).then((updatedVote)=> {
             return res.send(200);
           }, (err)=> {
             return res.send(400, {
