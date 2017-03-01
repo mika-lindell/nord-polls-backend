@@ -1,25 +1,23 @@
 /**
- * Choice.js
+ * Vote.js
  *
- * @description :: A single choice in a Poll
+ * @description :: Votes for a choice.
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
 module.exports = {
   attributes: {
-    id: {
+    choice_id: {
       type: 'string',
       index: true,
       primaryKey: true,
       unique: true,
-      required: true,     
+      required: true,       
     },
-    title: {
-      type: 'string'
-    },
-    poll: {
-      model: 'poll'
-    }
+    votes: {
+      type: 'integer',
+      defaultsTo: 0
+    },    
   }
 };
 
