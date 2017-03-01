@@ -166,7 +166,8 @@ module.exports = {
           const update = {
             votes: foundVote.votes + 1
           };
-          Vote.update({id: req.body.choice_id}, update).then((updatedVote)=> {
+          sails.log(update)
+          Vote.update({choice_id: req.body.choice_id}, update).then((updatedVote)=> {
             return res.send(200);
           }, (err)=> {
             return res.send(400, {
