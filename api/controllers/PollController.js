@@ -8,6 +8,42 @@
 
 const shortid = require('shortid');
 
+/**
+ * Get existing poll.
+ *
+ * @param {string} The id of the poll to be queried
+  @param  {object} Sails response
+   @param {object} Sails request
+ * @param {boolean} Include votes in response if true
+ *
+ * @return {object} Sails ServerResponse containig poll with choices and votes if flag is set
+ */
+function queryPoll(id, res, req, withVotes=false){
+  if(typeof id === 'undefined'){
+    return res.send(400, {
+      error: 'It seems that your website address is missing the id of the poll.'
+    });
+  }
+
+  Poll.findOne(id).then((poll)=> {
+    if(typeof poll === 'undefined'){
+      return res.send(404, {
+        error: 'The poll you are looking for seems to be missing.'
+      });
+    }
+    Poll.findOne(id).populateAll().then((choices)=> {
+      const result = {
+        data: Object.assign({}, poll, choices)
+      }; 
+      return res.send(200, result);
+    }, (err)=> {
+      return res.send(400, {
+        error: 'Failed to find the poll :('
+      });
+    });
+  });
+}
+
 module.exports = {
   /**
    * Create new poll and save it to database. /poll/
@@ -63,31 +99,7 @@ module.exports = {
    * @return {object} Sails ServerResponse containing the poll which was requested.
    */
   read(req, res) {
-    const id = req.param('id');
-
-    if(typeof id === 'undefined'){
-      return res.send(400, {
-        error: 'It seems that your website address is missing the id of the poll.'
-      });
-    }
-
-    Poll.findOne(id).then((poll)=> {
-      if(typeof poll === 'undefined'){
-        return res.send(404, {
-          error: 'The poll you are looking for seems to be missing.'
-        });
-      }
-      Poll.findOne(id).populateAll().then((choices)=> {
-        const result = {
-          data: Object.assign({}, poll, choices)
-        }; 
-        return res.send(200, result);
-      }, (err)=> {
-        return res.send(400, {
-          error: 'Failed to find the poll :('
-        });
-      });
-    });
+    return queryPoll(req.param('id'), res, req);
   },
   /**
    * Add 1 vote to a choice. /poll/:id/vote
