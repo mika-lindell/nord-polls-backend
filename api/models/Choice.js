@@ -12,10 +12,12 @@ module.exports = {
       index: true,
       primaryKey: true,
       unique: true,
-      required: true,     
+      required: true,
+      maxLength: 15,     
     },
     title: {
-      type: 'string'
+      type: 'string',
+      maxLength: 80,  
     },
     poll: {
       model: 'poll'
