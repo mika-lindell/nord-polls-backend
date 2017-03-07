@@ -12,14 +12,16 @@ module.exports = {
       index: true,
       primaryKey: true,
       unique: true,
-      required: true    
+      required: true,
+      maxLength: 15,  
     },
     title: {
-      type: 'string'
+      type: 'string',
+      maxLength: 80,  
     },
     choices: {
       collection: 'choice',
-      via: 'poll'
+      via: 'poll',
     }
   }
 };

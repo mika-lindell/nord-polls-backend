@@ -44,7 +44,7 @@ function queryPoll(id, res, req, withVotes=false){
           return res.send(200, result);
         }, (err)=> {
           return res.send(400, {
-            error: 'Failed to find the poll :('
+            error: 'Failed to fetch the poll -> error while retrieving votes'
           });
         });
       }
@@ -59,7 +59,7 @@ function queryPoll(id, res, req, withVotes=false){
       
     }, (err)=> {
       return res.send(400, {
-        error: 'Failed to find the poll :('
+        error: 'Failed to find the poll'
       });
     });
   });
@@ -77,9 +77,14 @@ module.exports = {
     }, req.body);
     if(!req.body.choices){
       return res.send(400, {
-        error: 'Your poll needs to have some choices first.'
+        error: 'Your poll needs to have at least 2 choices -> you have none'
       });
     }    
+    if(req.body.choices.length < 2){
+      return res.send(400, {
+        error: 'Your poll needs to have at least 2 choices -> you have less than 2'
+      });
+    }   
     Poll.create(newPoll).then((poll)=> {
       req.body.choices.map((current)=> { 
         const newChoice = {
@@ -89,7 +94,7 @@ module.exports = {
         };
         Choice.create(newChoice).then((choice)=>{}, (err)=> {
           return res.send(400, {
-            error: 'Failed to save poll choices :('
+            error: 'Failed to save poll choices -> error while creating'
           });         
         });
       });
@@ -100,12 +105,12 @@ module.exports = {
         return res.send(201, result);
       }, (err)=> {
         return res.send(400, {
-          error: 'Failed to save the poll :('
+          error: `Failed to save the poll -> for some reason the poll didn't persist`
         });
       });
     }, (err)=> {
       return res.send(400, {
-        error: 'Failed to save the poll :('
+        error: 'Failed to save the poll -> error while creating'
       });
     });
   },
@@ -131,11 +136,9 @@ module.exports = {
    * @return {integer} Sails ServerResponse containing void or error message in case of error.
    */
   vote(req, res) {
-    const pollID = req.param('id');
-
     if(!req.body.choice_id){
       return res.send(400, {
-        error: 'Cant\'t find out which choice you wanted to vote.'
+        error: `Cant't find out which choice you wanted to vote.`
       });
     }
 
@@ -154,7 +157,7 @@ module.exports = {
           }
 
           Vote.create(newVote).then((createdVote)=> {
-            return res.send(201);
+            return res.send(201, {});
           }, (err)=> {
             return res.send(400, {
               error: 'Failed to save the vote :('
@@ -167,22 +170,22 @@ module.exports = {
             votes: foundVote.votes + 1
           };
           Vote.update({choice_id: req.body.choice_id}, update).then((updatedVote)=> {
-            return res.send(200);
+            return res.send(200, {});
           }, (err)=> {
             return res.send(400, {
-              error: 'Failed to save the vote :('
+              error: 'Failed to save the vote -> error while trying to update the vote'
             });            
           });
         } 
         
       }, (err)=> {
         return res.send(400, {
-          error: 'Failed to save the vote :('
+          error: 'Failed to save the vote -> error while looking for existing votes'
         });
       });
     }, (err)=> {
       return res.send(400, {
-        error: 'Failed to save the vote :('
+        error: 'Failed to save the vote -> error while looking for associated choice'
       });
     });
   }

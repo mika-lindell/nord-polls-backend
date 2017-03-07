@@ -12,11 +12,12 @@ module.exports = {
       index: true,
       primaryKey: true,
       unique: true,
-      required: true,       
+      required: true,
+      maxLength: 15,         
     },
     votes: {
       type: 'integer',
-      defaultsTo: 0
+      defaultsTo: 0,
     },    
   }
 };
